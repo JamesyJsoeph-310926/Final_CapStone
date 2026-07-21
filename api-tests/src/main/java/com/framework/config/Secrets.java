@@ -1,5 +1,6 @@
 package com.framework.config;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.util.Properties;
 
@@ -9,7 +10,11 @@ public final class Secrets {
 
     static {
         try {
-            props.load(new FileInputStream("secrets.local.properties"));
+            File file = new File("secrets.local.properties");
+
+            if (file.exists()) {
+                props.load(new FileInputStream(file));
+            }
         } catch (Exception e) {
             throw new RuntimeException("Unable to load secrets", e);
         }
