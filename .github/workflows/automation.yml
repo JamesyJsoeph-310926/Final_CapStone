@@ -1,0 +1,89 @@
+name: UI Automation
+
+on:
+  push:
+    branches: [main, capstone/310926-jamesy-joseph]
+  pull_request:
+    branches: [main, capstone/310926-jamesy-joseph]
+
+jobs:
+  ui-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Dependencies
+        working-directory: ui-tests
+        run: npm ci
+
+      - name: Install Playwright Browser
+        working-directory: ui-tests
+        run: npx playwright install chromium --with-deps
+
+      - name: Run UI Tests
+        working-directory: ui-tests
+        env:
+          BASE_URL: ${{ secrets.JAMESY_BASE_URL }}
+          HEADLESS: ${{ secrets.JAMESY_HEADLESS }}
+        run: npx playwright test
+
+      - name: Upload UI HTML Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: ui-tests/reports/html
+
+      - name: Upload UI Allure Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-allure-results
+          path: ui-tests/allure-results
+
+  api-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 22
+          cache: maven
+
+      - name: Run API Tests
+        working-directory: api-tests
+        env:
+          BASE_URL: ${{ secrets.JAMESY_API_BASE_URL }}
+          TEST_USERNAME: ${{ secrets.JAMESY_API_USERNAME }}
+          TEST_PASSWORD: ${{ secrets.JAMESY_API_PASSWORD }}
+          TEST_INVALID_USERNAME: ${{ secrets.JAMESY_API_INVALID_USERNAME }}
+          TEST_INVALID_PASSWORD: ${{ secrets.JAMESY_API_INVALID_PASSWORD }}
+        run: mvn clean test
+
+      - name: Upload Surefire Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: api-tests/target/surefire-reports
+
+      - name: Upload API Allure Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-allure-results
+          path: api-tests/allure-results
