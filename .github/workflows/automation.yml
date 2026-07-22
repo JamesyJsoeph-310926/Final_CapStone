@@ -24,7 +24,7 @@ jobs:
         working-directory: ui-tests
         run: npm ci
 
-      - name: Install Playwright Browser
+      - name: Install Playwright Browsers
         working-directory: ui-tests
         run: npx playwright install chromium --with-deps
 
@@ -35,17 +35,12 @@ jobs:
           HEADLESS: ${{ secrets.JAMESY_HEADLESS }}
         run: npx playwright test
 
-      - name: Upload UI HTML Report
+      - name: Upload Playwright HTML Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: ui-tests/reports/html
-
-      - name: Generate API Allure Report
-        working-directory: api-tests
-        run: |
-          allure generate allure-results --clean -o allure-report
+          path: ui-tests/reports/htmla
 
       - name: Upload UI Allure Results
         if: always()
@@ -79,21 +74,28 @@ jobs:
           TEST_INVALID_PASSWORD: ${{ secrets.JAMESY_API_INVALID_PASSWORD }}
         run: mvn clean test
 
-      - name: Upload Surefire Reports
+      - name: Generate API Allure Report
+        if: always()
+        working-directory: api-tests
+        run: mvn allure:report
+
+      - name: Upload API Allure Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: surefire-reports
-          path: api-tests/target/surefire-reports
-
-      - name: Generate API Allure Report
-        working-directory: api-tests
-        run: |
-          allure generate allure-results --clean -o allure-report
+          name: api-allure-report
+          path: api-tests/target/site/allure-maven-plugin
 
       - name: Upload API Allure Results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: api-allure-results
-          path: api-tests/allure-results
+          path: api-tests/target/allure-results
+
+      - name: Upload Surefire Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: api-tests/target/surefire-reports
