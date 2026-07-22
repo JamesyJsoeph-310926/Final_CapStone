@@ -12,7 +12,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: [
-    ['list'],['html', { outputFolder: '../reports/html' }],['allure-playwright']
+    ['list'],['html', { outputFolder: 'reports/html' }],['allure-playwright']
 ],
   use: {
     baseURL: Secrets.BASE_URL,
